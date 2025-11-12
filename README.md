@@ -1,6 +1,6 @@
 # MCP Task Relay
 
-MCP Task Relay exposes the JobHub scheduler/executor workflow as a portable Model Context Protocol (MCP) server. Phase&nbsp;2 introduces Ask/Answer collaboration, a role catalog, and JSON Schema guarded artifacts so autonomous agents can plan, validate, and ship diffs with minimal context.
+MCP Task Relay exposes the JobHub scheduler/executor workflow as a portable Model Context Protocol (MCP) server. Includes Ask/Answer collaboration with an intelligent Answer Runner, a role catalog for prompt layering, and JSON Schema guarded artifacts so autonomous agents can plan, validate, and ship diffs with minimal context.
 
 ---
 
@@ -35,6 +35,7 @@ The CLI reads configuration in the following priority order: **flags > environme
 
 Additional environment variables:
 
+* `ANTHROPIC_API_KEY` – required for Answer Runner (scheduler-side LLM processing).
 * `TASK_RELAY_PROMPTS_DIR`, `TASK_RELAY_SCHEMATA_DIR`, `TASK_RELAY_POLICY_FILE` – override resource lookup without a config dir.
 * `TASK_RELAY_WEB_UI=true` – opt-in to the legacy HTTP dashboard.
 * `ENABLE_WEB_UI=true` – backward-compatible toggle for `node dist/index.js` entry.
@@ -99,9 +100,31 @@ A successful smoke test allows an MCP client to list the `task-relay` server and
 
 ---
 
+## ✨ Features
+
+### Ask/Answer Protocol
+Executors can request information, approval, or policy decisions from the scheduler using structured Ask messages. The Answer Runner automatically processes Asks using:
+
+- **Four-layer Prompt Architecture**: Base system instructions → Role-specific behavior → Context (job/step metadata) → Task (the actual question)
+- **Role Catalog**: YAML-based role definitions (diff planner, schema summarizer, policy decider, etc.)
+- **LLM Integration**: Uses Anthropic Claude for intelligent, context-aware responses
+- **JSON Schema Validation**: Ensures responses match expected output formats
+- **Decision Caching**: Reuses answers for repetitive queries
+
+### Database & Persistence
+- SQLite with WAL mode for high-performance concurrent access
+- In-memory mode for ephemeral testing
+- Tables: jobs, asks, answers, decision_cache, artifacts, events
+
+### Observability
+- Structured logging (pino)
+- SSE (Server-Sent Events) for real-time job/ask updates
+- Event tracking for all state transitions
+
+---
+
 ## 📚 Documentation
 
-* [Phase&nbsp;2 Development Spec](docs/phase-2.md) – Ask/Answer roles, prompt layering, policy and observability expectations.
 * [Publish & Install Guide](docs/publish-install.md) – npm workflow, CLI flags, and stdio integration examples for Codex, Claude, and Gemini.
 
 ---

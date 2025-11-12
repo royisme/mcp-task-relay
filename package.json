@@ -1,6 +1,6 @@
 {
   "name": "mcp-task-relay",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP Task Relay - Async job execution system with artifact generation",
   "type": "module",
   "main": "dist/index.js",

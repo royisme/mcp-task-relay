@@ -31,7 +31,7 @@ Minimal `package.json` fields:
 ```json
 {
   "name": "mcp-task-relay",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "bin": { "mcp-task-relay": "dist/cli.js" },
   "files": ["dist","prompts","schemata","README.md","LICENSE"],
@@ -74,11 +74,14 @@ Supported flags:
 
 Environment variable equivalents:
 
+* `ANTHROPIC_API_KEY` — **required** for Answer Runner (scheduler-side LLM processing).
 * `TASK_RELAY_PROFILE`
 * `TASK_RELAY_PROMPTS_DIR`, `TASK_RELAY_SCHEMATA_DIR`, `TASK_RELAY_POLICY_FILE`
 * `TASK_RELAY_STORAGE`, `TASK_RELAY_SQLITE_URL`
 
 Priority order: **CLI > env vars > config-dir contents > built-in defaults**.
+
+**Note on Answer Runner**: The scheduler automatically processes Ask messages using an LLM-powered Answer Runner. Set `ANTHROPIC_API_KEY` in your environment before starting the server. To disable automatic answer processing (e.g., for manual testing), set `TASK_RELAY_ANSWER_RUNNER_ENABLED=false`.
 
 ---
 
@@ -220,3 +223,5 @@ If the MCP client can register the server and successfully fulfill a sample `RES
 * **How do I customise roles or policies?** Provide overrides in `.mcp-task-relay/` and point the CLI to the directory.
 * **Do I need database migrations?** Development flows use in-memory or disposable SQLite and auto-create tables on first run.
 * **How do AI agents consume new code?** Use `npm link` or publish a patch release after running the smoke test.
+* **What is the Answer Runner?** A scheduler-side LLM engine that automatically processes Ask messages using role-based prompts and Anthropic Claude. It requires `ANTHROPIC_API_KEY` to be set.
+* **Can I disable automatic answer processing?** Yes, set `TASK_RELAY_ANSWER_RUNNER_ENABLED=false` or configure via `askAnswer.runner.enabled: false` in your config.
