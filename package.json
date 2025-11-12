@@ -9,11 +9,17 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "oxlint src",
+    "lint:type-aware": "oxlint --type-aware src",
     "typecheck": "tsc --noEmit",
     "migrate": "tsx src/db/migrate.ts",
     "test": "bun test"
   },
-  "keywords": ["mcp", "task-relay", "async-execution", "job-queue"],
+  "keywords": [
+    "mcp",
+    "task-relay",
+    "async-execution",
+    "job-queue"
+  ],
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.21.1",
@@ -28,6 +34,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.19.1",
     "oxlint": "latest",
+    "oxlint-tsgolint": "^0.5.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
