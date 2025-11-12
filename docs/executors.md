@@ -8,7 +8,7 @@ Non-interactive execution with sandboxing.
 
 **Configuration**:
 
-```env
+```dotenv
 CODEX_ENABLED=true
 CODEX_BINARY=codex
 CODEX_DEFAULT_MODEL=gpt-4
@@ -32,7 +32,7 @@ Agent mode with structured output.
 
 **Configuration**:
 
-```env
+```dotenv
 CLAUDE_ENABLED=true
 CLAUDE_BINARY=claude
 CLAUDE_DEFAULT_MODEL=claude-sonnet-4

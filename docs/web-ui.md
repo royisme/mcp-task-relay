@@ -15,11 +15,11 @@ Real-time monitoring dashboard with Server-Sent Events.
 MCP_MODE=false bun run dev
 ```
 
-Open http://localhost:3000
+Open `http://localhost:3000`
 
 ## Configuration
 
-```env
+```dotenv
 WEB_UI_PORT=3000
 ENABLE_WEB_UI=true
 ```

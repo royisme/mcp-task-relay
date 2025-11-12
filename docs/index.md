@@ -3,7 +3,7 @@
 > **A Production-Ready Async Job Execution System Built on Model Context Protocol**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-Zero%20Any-blue)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-19%2F19%20Pass-success)](.)
+![Tests](https://img.shields.io/badge/Tests-19%2F19%20Pass-success)
 [![MCP](https://img.shields.io/badge/MCP-SDK%201.21-purple)](https://modelcontextprotocol.io)
 
 ## What is MCP Task Relay?
@@ -190,7 +190,6 @@ Continue to:
 - [**Getting Started**](getting-started.md): Detailed setup guide
 - [**Core Concepts**](concepts.md): Deep dive into architecture
 - [**API Reference**](api-reference.md): Complete MCP tools documentation
-- [**Phase 2 Development Spec**](phase-2.md): Draft design for the Ask/Answer expansion
 
 ---
 

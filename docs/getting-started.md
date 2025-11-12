@@ -52,7 +52,7 @@ cp .env.example .env
 
 Edit `.env` to customize settings:
 
-```env
+```dotenv
 # Storage
 ARTIFACT_ROOT=./artifacts
 DB_PATH=./jobhub.db

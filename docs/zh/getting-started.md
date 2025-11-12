@@ -52,7 +52,7 @@ cp .env.example .env
 
 编辑 `.env` 自定义设置：
 
-```env
+```dotenv
 # 存储
 ARTIFACT_ROOT=./artifacts
 DB_PATH=./jobhub.db

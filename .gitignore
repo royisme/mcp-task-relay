@@ -141,3 +141,4 @@ docs/api/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 site/
+.serena/

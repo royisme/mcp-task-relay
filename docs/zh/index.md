@@ -3,7 +3,7 @@
 > **基于模型上下文协议构建的生产级异步任务执行系统**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-Zero%20Any-blue)](https://www.typescriptlang.org/)
-[![测试](https://img.shields.io/badge/Tests-19%2F19%20Pass-success)](.)
+![测试](https://img.shields.io/badge/Tests-19%2F19%20Pass-success)
 [![MCP](https://img.shields.io/badge/MCP-SDK%201.21-purple)](https://modelcontextprotocol.io)
 
 ## MCP Task Relay 是什么？
