@@ -125,7 +125,7 @@ Executors can request information, approval, or policy decisions from the schedu
 
 ## 📚 Documentation
 
-* [Publish & Install Guide](docs/publish-install.md) – npm workflow, CLI flags, and stdio integration examples for Codex, Claude, and Gemini.
+* [Usage Guide](docs/usage.md) – Installation, configuration, and MCP client integration (Codex, Claude Code, Gemini).
 
 ---
 
