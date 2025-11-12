@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-task-relay.dev/schemata/answer.schema.json",
+  "title": "AnswerPayload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "ask_id", "job_id", "step_id", "status"],
+  "properties": {
+    "type": { "const": "Answer" },
+    "ask_id": { "type": "string", "format": "uuid" },
+    "job_id": { "type": "string" },
+    "step_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["ANSWERED", "REJECTED", "TIMEOUT", "ERROR"] },
+    "answer_text": { "type": "string" },
+    "answer_json": {},
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "policy_trace": {},
+    "cacheable": { "type": "boolean" },
+    "ask_back": { "type": "string" },
+    "error": { "type": "string" }
+  }
+}

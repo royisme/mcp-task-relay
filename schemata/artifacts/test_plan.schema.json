@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-task-relay.dev/schemata/artifacts/test_plan.schema.json",
+  "title": "TestPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["unit", "integration", "e2e"],
+  "properties": {
+    "unit": { "type": "array", "items": { "type": "string" } },
+    "integration": { "type": "array", "items": { "type": "string" } },
+    "e2e": { "type": "array", "items": { "type": "string" } }
+  }
+}

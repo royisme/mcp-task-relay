@@ -1,0 +1,12 @@
+id: role.finder
+version: 1
+purpose: "基于最小工具集在仓库/知识中检索目标，返回小体量结果。"
+system: |
+  Use at most the allowed tools to find N best matches. Return compact JSON; prefer pointers over blobs.
+input_schema: |
+  {"type":"object","required":["query","k"],"properties":{"query":{"type":"string"},"k":{"type":"number"}}}
+output_schema: |
+  {"type":"array","items":{"type":"object","required":["path","why"],
+     "properties":{"path":{"type":"string"},"why":{"type":"string"}}}}
+limits:
+  max_tokens: 500

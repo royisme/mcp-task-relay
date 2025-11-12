@@ -63,6 +63,8 @@ nav:
   - Web UI: web-ui.md
   - Testing: testing.md
   - Development: development.md
+  - Publish & Install: publish-install.md
+  - Phase 2 Spec: phase-2.md
   - 中文文档:
     - 首页: zh/index.md
     - 快速开始: zh/getting-started.md

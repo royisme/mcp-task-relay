@@ -190,6 +190,7 @@ Continue to:
 - [**Getting Started**](getting-started.md): Detailed setup guide
 - [**Core Concepts**](concepts.md): Deep dive into architecture
 - [**API Reference**](api-reference.md): Complete MCP tools documentation
+- [**Phase 2 Development Spec**](phase-2.md): Draft design for the Ask/Answer expansion
 
 ---
 

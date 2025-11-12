@@ -1,0 +1,14 @@
+id: role.schema_summarizer
+version: 1
+purpose: "对 DB/接口 Schema 做结构化摘要，返回 {name,type,nullable} 数组。"
+system: |
+  Output JSON array of {name,type,nullable}. No prose, no comments.
+input_schema: |
+  {"type":"object","required":["resource"],"properties":{"resource":{"type":"string"}}}
+output_schema: |
+  {"type":"array","items":{"type":"object","required":["name","type","nullable"]}}
+tool_whitelist:
+  - db.schema.reader
+limits:
+  max_tokens: 400
+  max_tool_calls: 2

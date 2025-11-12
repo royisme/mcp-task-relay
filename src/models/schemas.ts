@@ -98,6 +98,7 @@ export const JobStatusSchema = z.object({
   state: z.enum([
     JobStates.QUEUED,
     JobStates.RUNNING,
+    JobStates.WAITING_ON_ANSWER,
     JobStates.SUCCEEDED,
     JobStates.FAILED,
     JobStates.CANCELED,
@@ -198,6 +199,116 @@ export const EventRecordSchema = z.object({
 });
 
 export type EventRecord = z.infer<typeof EventRecordSchema>;
+
+// ============================================================================
+// Ask/Answer Protocol
+// ============================================================================
+
+export const AskTypeSchema = z.enum([
+  'CLARIFICATION',
+  'RESOURCE_FETCH',
+  'POLICY_DECISION',
+  'APPROVAL',
+  'CHOICE',
+]);
+
+export const AskConstraintsSchema = z
+  .object({
+    timeout_s: z.number().int().positive().optional(),
+    max_tokens: z.number().int().positive().optional(),
+    allowed_tools: z.array(z.string()).optional(),
+  })
+  .optional();
+
+export const AskPayloadSchema = z.object({
+  type: z.literal('Ask'),
+  ask_id: z.string().uuid(),
+  job_id: z.string(),
+  step_id: z.string(),
+  ask_type: AskTypeSchema,
+  prompt: z.string().min(1),
+  context_hash: z.string().min(1),
+  constraints: AskConstraintsSchema,
+  role_id: z.string().optional(),
+  meta: z.record(z.unknown()).optional(),
+});
+
+export const AskStatusSchema = z.enum([
+  'PENDING',
+  'ANSWERED',
+  'REJECTED',
+  'TIMEOUT',
+  'ERROR',
+]);
+
+export const AskRecordSchema = z.object({
+  askId: z.string().uuid(),
+  jobId: z.string(),
+  stepId: z.string(),
+  askType: AskTypeSchema,
+  prompt: z.string(),
+  contextHash: z.string(),
+  constraints: AskConstraintsSchema,
+  roleId: z.string().optional(),
+  meta: z.record(z.unknown()).optional(),
+  createdAt: z.number().int().positive(),
+  status: AskStatusSchema,
+});
+
+export const AnswerStatusSchema = z.enum([
+  'ANSWERED',
+  'REJECTED',
+  'TIMEOUT',
+  'ERROR',
+]);
+
+export const AnswerPayloadSchema = z.object({
+  type: z.literal('Answer'),
+  ask_id: z.string().uuid(),
+  job_id: z.string(),
+  step_id: z.string(),
+  status: AnswerStatusSchema,
+  answer_text: z.string().optional(),
+  answer_json: z.unknown().optional(),
+  artifacts: z.array(z.string()).optional(),
+  policy_trace: z.unknown().optional(),
+  cacheable: z.boolean().optional(),
+  ask_back: z.string().optional(),
+  error: z.string().optional(),
+});
+
+export const AnswerRecordSchema = z.object({
+  askId: z.string().uuid(),
+  jobId: z.string(),
+  stepId: z.string(),
+  status: AnswerStatusSchema,
+  answerText: z.string().optional(),
+  answerJson: z.unknown().optional(),
+  artifacts: z.array(z.string()).optional(),
+  policyTrace: z.unknown().optional(),
+  cacheable: z.boolean().default(true),
+  askBack: z.string().optional(),
+  error: z.string().optional(),
+  createdAt: z.number().int().positive(),
+});
+
+export const DecisionCacheRecordSchema = z.object({
+  decisionKey: z.string(),
+  answerJson: z.unknown().optional(),
+  answerText: z.string().optional(),
+  policyTrace: z.unknown().optional(),
+  createdAt: z.number().int().positive(),
+  ttlSeconds: z.number().int().positive(),
+});
+
+export type AskType = z.infer<typeof AskTypeSchema>;
+export type AskPayload = z.infer<typeof AskPayloadSchema>;
+export type AskRecord = z.infer<typeof AskRecordSchema>;
+export type AskStatus = z.infer<typeof AskStatusSchema>;
+export type AnswerStatus = z.infer<typeof AnswerStatusSchema>;
+export type AnswerPayload = z.infer<typeof AnswerPayloadSchema>;
+export type AnswerRecord = z.infer<typeof AnswerRecordSchema>;
+export type DecisionCacheRecord = z.infer<typeof DecisionCacheRecordSchema>;
 
 // ============================================================================
 // MCP Tool Requests & Responses

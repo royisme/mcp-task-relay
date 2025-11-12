@@ -8,6 +8,8 @@ import {
   JobStatusSchema,
   SubmitRequestSchema,
   ArtifactMetaSchema,
+  AskPayloadSchema,
+  AnswerPayloadSchema,
 } from '../src/models/schemas.js';
 import { asJobId, asCommitHash, isJobId } from '../src/models/brands.js';
 import { canTransition, priorityToNumber } from '../src/models/states.js';
@@ -81,6 +83,37 @@ describe('Zod Schemas', () => {
     const result = ArtifactMetaSchema.safeParse(validMeta);
     expect(result.success).toBe(true);
   });
+
+  test('AskPayloadSchema validates ask payload', () => {
+    const payload = {
+      type: 'Ask' as const,
+      ask_id: '123e4567-e89b-12d3-a456-426614174000',
+      job_id: 'job_123',
+      step_id: 'step-1',
+      ask_type: 'CLARIFICATION' as const,
+      prompt: 'Need more info',
+      context_hash: 'ctx-abc',
+      constraints: { timeout_s: 30, allowed_tools: ['repo.read'] },
+    };
+
+    const result = AskPayloadSchema.safeParse(payload);
+    expect(result.success).toBe(true);
+  });
+
+  test('AnswerPayloadSchema validates answer payload', () => {
+    const payload = {
+      type: 'Answer' as const,
+      ask_id: '123e4567-e89b-12d3-a456-426614174000',
+      job_id: 'job_123',
+      step_id: 'step-1',
+      status: 'ANSWERED' as const,
+      answer_text: 'All good',
+      answer_json: { ok: true },
+    };
+
+    const result = AnswerPayloadSchema.safeParse(payload);
+    expect(result.success).toBe(true);
+  });
 });
 
 describe('Branded Types', () => {
@@ -109,6 +142,9 @@ describe('State Machine', () => {
     expect(canTransition('QUEUED', 'RUNNING')).toBe(true);
     expect(canTransition('RUNNING', 'SUCCEEDED')).toBe(true);
     expect(canTransition('RUNNING', 'FAILED')).toBe(true);
+    expect(canTransition('RUNNING', 'WAITING_ON_ANSWER')).toBe(true);
+    expect(canTransition('WAITING_ON_ANSWER', 'RUNNING')).toBe(true);
+    expect(canTransition('WAITING_ON_ANSWER', 'SUCCEEDED')).toBe(false);
     expect(canTransition('SUCCEEDED', 'RUNNING')).toBe(false); // Terminal state
   });
 

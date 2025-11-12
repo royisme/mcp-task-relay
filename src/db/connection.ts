@@ -15,21 +15,29 @@ export interface DbConnection {
   close: () => void;
 }
 
-export function createConnection(dbPath: string): DbConnection {
+export type StorageMode = 'memory' | 'sqlite';
+
+export interface ConnectionOptions {
+  mode: StorageMode;
+}
+
+export function createConnection(dbPath: string, options: ConnectionOptions): DbConnection {
   const db = new Database(dbPath, {
     verbose: process.env['NODE_ENV'] === 'development' ? console.log : undefined,
   });
 
-  // Enable WAL mode for better concurrency
-  db.pragma('journal_mode = WAL');
+  if (options.mode === 'sqlite') {
+    // Enable WAL mode for better concurrency when using on-disk SQLite
+    db.pragma('journal_mode = WAL');
 
-  // Other performance optimizations
-  db.pragma('synchronous = NORMAL');
-  db.pragma('cache_size = -64000'); // 64MB cache
-  db.pragma('temp_store = MEMORY');
-  db.pragma('mmap_size = 30000000000'); // 30GB mmap
+    // Other performance optimizations
+    db.pragma('synchronous = NORMAL');
+    db.pragma('cache_size = -64000'); // 64MB cache
+    db.pragma('temp_store = MEMORY');
+    db.pragma('mmap_size = 30000000000'); // 30GB mmap
+  }
 
-  // Foreign key constraints
+  // Foreign key constraints apply to both storage modes
   db.pragma('foreign_keys = ON');
 
   return {
@@ -53,6 +61,7 @@ export function runMigrations(db: DatabaseType): void {
   // Migration files
   const migrations = [
     { version: 1, file: '001_initial_schema.sql' },
+    { version: 2, file: '002_phase2_ask_answer.sql' },
   ];
 
   for (const migration of migrations) {

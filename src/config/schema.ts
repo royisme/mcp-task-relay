@@ -5,6 +5,14 @@
 import { z } from 'zod';
 
 export const ConfigSchema = z.object({
+  runtime: z.object({
+    profile: z.enum(['dev', 'staging', 'prod']).default('dev'),
+    transport: z.enum(['stdio']).default('stdio'),
+    promptsDir: z.string().optional(),
+    schemataDir: z.string().optional(),
+    policyFile: z.string().optional(),
+  }),
+
   server: z.object({
     artifactRoot: z.string().default('./artifacts'),
     maxConcurrency: z.number().int().positive().default(3),
@@ -14,8 +22,15 @@ export const ConfigSchema = z.object({
     jobTimeoutCheckIntervalMs: z.number().int().positive().default(30000),
   }),
 
+  askAnswer: z.object({
+    port: z.number().int().positive().default(3415),
+    longPollTimeoutSec: z.number().int().positive().max(60).default(25),
+    sseHeartbeatSec: z.number().int().positive().max(60).default(10),
+  }),
+
   storage: z.object({
-    sqlitePath: z.string().default('./jobhub.db'),
+    mode: z.enum(['memory', 'sqlite']).default('memory'),
+    sqlitePath: z.string().optional(),
   }),
 
   policies: z.object({
