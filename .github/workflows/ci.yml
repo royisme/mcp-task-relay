@@ -21,14 +21,14 @@ jobs:
       - name: Install deps (Bun)
         run: bun install --frozen-lockfile
 
-      - name: Lint (optional)
-        run: bun run lint --if-present
+      - name: Lint
+        run: bun run lint
 
-      - name: Type check (optional)
-        run: bun run typecheck --if-present
+      - name: Type check
+        run: bun run typecheck
 
       - name: Build
-        run: bun run build --if-present
+        run: bun run build
 
       - name: Test
-        run: bun run test --if-present
+        run: bun run test
