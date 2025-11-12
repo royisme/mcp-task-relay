@@ -2,6 +2,20 @@
 
 一个基于 MCP (Model Context Protocol) 的异步任务执行系统，支持提交、执行、工件生成和通知的完整闭环。
 
+[![Documentation](https://img.shields.io/badge/docs-online-blue)](https://royisme.github.io/mcp-task-relay/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Zero%20Any-blue)](https://www.typescriptlang.org/)
+[![Tests](https://img.shields.io/badge/Tests-19%2F19%20Pass-success)](./)
+[![MCP](https://img.shields.io/badge/MCP-SDK%201.21-purple)](https://modelcontextprotocol.io)
+
+## 📚 文档
+
+完整文档请访问：**[https://royisme.github.io/mcp-task-relay/](https://royisme.github.io/mcp-task-relay/)**
+
+- [快速开始指南](https://royisme.github.io/mcp-task-relay/getting-started/) - 10 分钟上手教程
+- [核心概念](https://royisme.github.io/mcp-task-relay/concepts/) - 深入理解架构
+- [API 参考](https://royisme.github.io/mcp-task-relay/api-reference/) - 完整的 MCP 工具文档
+- [中文文档](https://royisme.github.io/mcp-task-relay/zh/) - 中文版首页和快速开始
+
 ## 🌟 特性
 
 - **异步任务队列**：提交任务后立即返回 job_id，通过 MCP 资源订阅或 Web UI 查看进度
