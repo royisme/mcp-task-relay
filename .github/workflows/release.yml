@@ -33,6 +33,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+          cache-install: true
 
       - name: Install deps (Bun)
         run: bun install --frozen-lockfile
@@ -60,7 +61,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
+          cache-install: true
       - name: Install deps (Bun)
         run: bun install --frozen-lockfile
 
