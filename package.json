@@ -12,7 +12,10 @@
     "lint:type-aware": "oxlint --type-aware src",
     "typecheck": "tsc --noEmit",
     "migrate": "tsx src/db/migrate.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "inspector": "npx @modelcontextprotocol/inspector tsx src/index.ts",
+    "inspector:standalone": "MCP_MODE=false npx @modelcontextprotocol/inspector tsx src/index.ts"
   },
   "keywords": [
     "mcp",
@@ -31,6 +34,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@modelcontextprotocol/inspector": "^0.17.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.19.1",
     "oxlint": "latest",

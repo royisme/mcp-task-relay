@@ -279,16 +279,38 @@ mcp-task-relay/
 
 ## 🧪 测试
 
+### 运行测试
+
 ```bash
+# 运行所有测试
+bun test
+
+# 监听模式（自动重新运行）
+bun run test:watch
+
 # 类型检查
 bun run typecheck
 
-# Lint
+# Lint（基础）
 bun run lint
+
+# Lint（类型感知，103 规则）
+bun run lint:type-aware
 
 # 构建
 bun run build
 ```
+
+### 测试覆盖
+
+当前测试覆盖：
+- ✅ Zod Schema 验证（JobSpec, JobStatus, Artifact 等）
+- ✅ 品牌类型（JobId, CommitHash）
+- ✅ 状态机转换逻辑
+- ✅ Result 类型操作
+- ✅ Hash 工具函数
+
+**测试结果**：`19 pass, 0 fail, 36 expect() calls`
 
 ## 📊 Web UI
 
@@ -298,6 +320,60 @@ bun run build
 - 📋 任务列表（实时更新）
 - 🔄 Server-Sent Events (SSE) 实时推送
 - 🎨 Tailwind CSS 现代 UI
+
+## 🔍 MCP Inspector（调试工具）
+
+使用官方 MCP Inspector 进行交互式测试和调试：
+
+### 启动 Inspector
+
+```bash
+# MCP 模式（测试 MCP tools/resources）
+bun run inspector
+
+# 独立工作模式（测试 Worker 执行）
+bun run inspector:standalone
+```
+
+### Inspector 功能
+
+Inspector 提供以下调试能力：
+
+1. **Server Connection Pane**
+   - 选择传输方式（stdio/sse）
+   - 自定义环境变量和参数
+
+2. **Resources Tab**
+   - 查看所有可用资源
+   - 测试资源订阅
+   - 检查资源内容（status, artifacts）
+
+3. **Prompts Tab**
+   - 显示可用的 prompt 模板
+   - 测试自定义参数
+
+4. **Tools Tab**
+   - 列出所有可用工具（jobs_submit, jobs_get, jobs_list, jobs_cancel）
+   - 测试工具调用
+   - 查看执行结果
+
+5. **Notifications Pane**
+   - 查看服务器日志
+   - 监控通知消息
+
+### 测试流程示例
+
+```bash
+# 1. 启动 Inspector
+bun run inspector
+
+# 2. 在 Tools 标签测试 jobs_submit
+# 3. 在 Resources 标签订阅状态更新
+# 4. 在 Notifications 查看实时日志
+# 5. 测试 jobs_get/jobs_list/jobs_cancel
+```
+
+参考：[MCP Inspector 官方文档](https://github.com/modelcontextprotocol/inspector)
 
 ## 🛠️ 开发
 
