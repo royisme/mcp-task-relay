@@ -320,13 +320,6 @@ The SDK automatically omits default values to minimize token usage:
 
 ---
 
-## 📚 Documentation
-
-- **[Usage Guide](docs/usage.md)** — Complete usage documentation (English)
-- **[使用指南](docs/usage.zh-CN.md)** — 完整使用文档（中文）
-
----
-
 ## 🛠️ Development
 
 ### Build from Source
