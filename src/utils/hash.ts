@@ -57,3 +57,17 @@ export function stableHashContext(envelope: ContextEnvelope): string {
   const content = JSON.stringify(canonical);
   return createHash('sha256').update(content, 'utf8').digest('hex');
 }
+
+/**
+ * Get a value from context envelope with default fallback.
+ * Handles optional fields gracefully by applying standard defaults.
+ */
+export function getEnvelopeValue<T>(
+  envelope: ContextEnvelope,
+  path: 'repo' | 'commit_sha' | 'env_profile' | 'policy_version',
+  defaultValue: T
+): T | string {
+  const snapshot = envelope.job_snapshot;
+  const value = snapshot[path];
+  return value ?? defaultValue;
+}

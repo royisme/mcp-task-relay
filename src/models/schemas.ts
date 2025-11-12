@@ -222,12 +222,12 @@ export const AskConstraintsSchema = z
 
 export const ContextEnvelopeSchema = z.object({
   job_snapshot: z.object({
-    repo: z.string(),
-    commit_sha: z.string(),
-    env_profile: z.string(),
-    policy_version: z.string(),
+    repo: z.string().optional(), // Optional: default 'unknown'
+    commit_sha: z.string().optional(), // Optional: default 'unknown'
+    env_profile: z.string().optional(), // Optional: default 'dev'
+    policy_version: z.string().optional(), // Optional: default '1.0'
   }),
-  facts: z.record(z.unknown()),
+  facts: z.record(z.unknown()).optional(), // Optional: skip if empty
   tool_caps: z.record(z.object({
     database: z.string().optional(),
     tables: z.array(z.string()).optional(),

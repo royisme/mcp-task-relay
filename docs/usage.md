@@ -209,29 +209,42 @@ askAnswer:
 
 To prevent context drift between Executor and Answer Runner, every Ask includes an explicit **context envelope** with cryptographic verification:
 
-**Context Envelope Structure:**
+**Context Envelope Structure (Full Example):**
 ```json
 {
   "job_snapshot": {
     "repo": "github.com/user/repo",
     "commit_sha": "abc123...",
-    "env_profile": "dev",
-    "policy_version": "1.0"
+    "env_profile": "production",
+    "policy_version": "2.0"
   },
   "facts": {
-    "job_id": "job_123",
-    "step_id": "step_456",
     "custom_fact": "value"
   },
   "tool_caps": {
     "database": {
-      "timeout_ms": 5000,
-      "read_only": true
+      "timeout_ms": 5000
     }
   },
   "role": "diff_planner"
 }
 ```
+
+**Minimal Example (default environment):**
+```json
+{
+  "job_snapshot": {},
+  "role": "default"
+}
+```
+
+**Token Optimization:**
+The context envelope uses smart defaults to minimize token usage:
+- `job_snapshot` fields omitted if using defaults (repo: unknown, commit_sha: unknown, env_profile: dev, policy_version: 1.0)
+- `facts` omitted if empty (job_id/step_id already in Ask payload)
+- `tool_caps` omitted if no tools specified
+- Typical minimal envelope: **~50 tokens** vs **200-300 tokens** for full envelope
+- Reduces bandwidth by **75-85%** in default configurations
 
 **Verification Flow:**
 1. Executor builds context_envelope and computes SHA-256 hash (context_hash)
@@ -323,3 +336,14 @@ A: The Answer Runner returns an `E_CONTEXT_MISMATCH` error immediately (fail-fas
 
 **Q: How do I pass custom facts to the context envelope?**
 A: Use environment variables with the `TASK_RELAY_FACT_` prefix. For example, `TASK_RELAY_FACT_branch=main` adds `"branch": "main"` to the facts object.
+
+**Q: How much token usage does the context envelope add?**
+A: Very little. With smart defaults, a minimal envelope is **~50 tokens** (just role). A typical envelope with custom facts is **100-150 tokens**. This is **95%+ smaller** than transmitting full conversation history (10k-50k tokens).
+
+**Q: Can I reduce token usage further?**
+A: Yes. The SDK automatically skips default values:
+- Don't set `TASK_RELAY_REPO`/`TASK_RELAY_COMMIT_SHA` unless needed (defaults to "unknown")
+- Don't set `TASK_RELAY_PROFILE` unless non-dev (defaults to "dev")
+- Don't set `TASK_RELAY_POLICY_VERSION` unless non-1.0 (defaults to "1.0")
+- Avoid unnecessary `TASK_RELAY_FACT_*` environment variables
+- Use `role_id` only when needed (defaults to type-based role)

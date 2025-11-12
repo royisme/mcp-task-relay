@@ -63,24 +63,31 @@ function requiredEnv(name: string): string {
 }
 
 function buildContextEnvelope(
-  jobId: string,
-  stepId: string,
   role: string,
   options?: AskOptions
 ): ContextEnvelope {
-  // Extract repo info from environment or use defaults
-  const repo = process.env['TASK_RELAY_REPO'] ?? 'unknown';
-  const commitSha = process.env['TASK_RELAY_COMMIT_SHA'] ?? 'unknown';
-  const envProfile = process.env['TASK_RELAY_PROFILE'] ?? 'dev';
-  const policyVersion = process.env['TASK_RELAY_POLICY_VERSION'] ?? '1.0';
+  // Extract repo info from environment (only include non-defaults to reduce token usage)
+  const repo = process.env['TASK_RELAY_REPO'];
+  const commitSha = process.env['TASK_RELAY_COMMIT_SHA'];
+  const envProfile = process.env['TASK_RELAY_PROFILE'];
+  const policyVersion = process.env['TASK_RELAY_POLICY_VERSION'];
 
-  // Build facts from environment
-  const facts: Record<string, unknown> = {
-    job_id: jobId,
-    step_id: stepId,
-  };
+  // Build job_snapshot with only non-default values
+  const jobSnapshot: {
+    repo?: string;
+    commit_sha?: string;
+    env_profile?: string;
+    policy_version?: string;
+  } = {};
+  if (repo && repo !== 'unknown') jobSnapshot.repo = repo;
+  if (commitSha && commitSha !== 'unknown') jobSnapshot.commit_sha = commitSha;
+  if (envProfile && envProfile !== 'dev') jobSnapshot.env_profile = envProfile;
+  if (policyVersion && policyVersion !== '1.0') jobSnapshot.policy_version = policyVersion;
 
-  // Add any additional facts from environment variables prefixed with TASK_RELAY_FACT_
+  // Build facts from environment (skip job_id/step_id as they're already in the payload)
+  const facts: Record<string, unknown> = {};
+
+  // Add custom facts from environment variables prefixed with TASK_RELAY_FACT_
   for (const key in process.env) {
     if (key.startsWith('TASK_RELAY_FACT_')) {
       const factKey = key.replace('TASK_RELAY_FACT_', '').toLowerCase();
@@ -88,29 +95,31 @@ function buildContextEnvelope(
     }
   }
 
-  // Build tool capabilities from options
-  const toolCaps: Record<string, { timeout_ms?: number; read_only?: boolean }> = {};
-  if (options?.allowed_tools) {
+  // Build tool capabilities from options (only if tools are specified)
+  let toolCaps: Record<string, { timeout_ms?: number; read_only?: boolean }> | undefined;
+  if (options?.allowed_tools && options.allowed_tools.length > 0) {
+    toolCaps = {};
     for (const tool of options.allowed_tools) {
-      const caps: { timeout_ms?: number; read_only?: boolean } = {
-        read_only: true, // Default to read-only for safety
-      };
+      const caps: { timeout_ms?: number; read_only?: boolean } = {};
+      // Only include timeout if specified (skip default read_only=true to save tokens)
       if (options.timeout_s) {
         caps.timeout_ms = options.timeout_s * 1000;
       }
-      toolCaps[tool] = caps;
+      // Only add caps if non-empty
+      if (Object.keys(caps).length > 0) {
+        toolCaps[tool] = caps;
+      }
+    }
+    // If all caps are empty, don't include tool_caps at all
+    if (Object.keys(toolCaps).length === 0) {
+      toolCaps = undefined;
     }
   }
 
   return {
-    job_snapshot: {
-      repo,
-      commit_sha: commitSha,
-      env_profile: envProfile,
-      policy_version: policyVersion,
-    },
-    facts,
-    tool_caps: Object.keys(toolCaps).length > 0 ? toolCaps : undefined,
+    job_snapshot: jobSnapshot,
+    facts: Object.keys(facts).length > 0 ? facts : undefined,
+    tool_caps: toolCaps,
     role,
   };
 }
@@ -171,7 +180,7 @@ export async function ask<T = unknown>(
 
   // Build context envelope with role
   const role = options?.role_id ?? 'default';
-  const contextEnvelope = buildContextEnvelope(jobId, stepId, role, options);
+  const contextEnvelope = buildContextEnvelope(role, options);
 
   // Compute context hash from envelope
   const contextHash = stableHashContext(contextEnvelope);

@@ -8,7 +8,7 @@ import { createHash } from 'crypto';
 import type { Logger } from 'pino';
 import type { AskRecord, AnswerStatus, Attestation } from '../models/index.js';
 import { AskAnswerErrors } from '../models/index.js';
-import { stableHashContext } from '../utils/index.js';
+import { stableHashContext, getEnvelopeValue } from '../utils/index.js';
 import { RoleCatalog } from './role-catalog.js';
 import { PromptBuilder } from './prompt-builder.js';
 
@@ -312,7 +312,7 @@ export class AnswerRunner {
       model: this.config.model,
       prompt_fingerprint: promptFingerprint,
       tools_used: toolsUsed,
-      policy_version: ask.contextEnvelope.job_snapshot.policy_version,
+      policy_version: String(getEnvelopeValue(ask.contextEnvelope, 'policy_version', '1.0')),
     };
   }
 }
