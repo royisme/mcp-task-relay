@@ -1,6 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src/index.ts"],
+  "entryPoints": ["src/**/*.ts"],
   "entryPointStrategy": "expand",
   "out": "docs/api",
   "plugin": ["typedoc-plugin-markdown"],
@@ -22,5 +22,8 @@
     "Models",
     "Utils",
     "*"
+  ],
+  "exclude": [
+    "src/db/migrate.ts"
   ]
 }

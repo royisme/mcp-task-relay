@@ -1,7 +1,8 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: "MCP Task Relay",
   description: "Async job execution system with MCP integration",
 
@@ -152,5 +153,10 @@ export default defineConfig({
 
   mermaid: {
     // Mermaid config options
+    theme: 'default'
+  },
+
+  mermaidPlugin: {
+    class: 'mermaid'
   }
-})
+}))
