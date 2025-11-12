@@ -245,10 +245,10 @@ index 1234567..abcdefg 100644
 
 现在你已经运行了 MCP Task Relay：
 
-1. [**核心概念**](concepts.md): 理解架构
-2. [**API 参考**](api-reference.md): 探索所有 MCP 工具
-3. [**执行器**](executors.md): 配置 AI 后端
-4. [**测试**](testing.md): 编写集成测试
+1. [**核心概念**](../concepts.md): 理解架构
+2. [**API 参考**](../api-reference.md): 探索所有 MCP 工具
+3. [**执行器**](../executors.md): 配置 AI 后端
+4. [**测试**](../testing.md): 编写集成测试
 
 ## 故障排除
 
@@ -272,4 +272,4 @@ index 1234567..abcdefg 100644
 
 ---
 
-**需要帮助？** [提交问题](https://github.com/royisme/mcp-task-relay/issues) 或查看 [开发指南](development.md)。
+**需要帮助？** [提交问题](https://github.com/royisme/mcp-task-relay/issues) 或查看 [开发指南](../development.md)。

@@ -188,8 +188,8 @@ if (valid) {
 继续阅读：
 
 - [**快速开始**](getting-started.md): 详细的设置指南
-- [**核心概念**](concepts.md): 深入了解架构
-- [**API 参考**](api-reference.md): 完整的 MCP tools 文档
+- [**核心概念**](../concepts.md): 深入了解架构
+- [**API 参考**](../api-reference.md): 完整的 MCP tools 文档
 
 ---
 
