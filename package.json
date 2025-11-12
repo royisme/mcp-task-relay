@@ -29,7 +29,10 @@
     "inspector:standalone": "MCP_MODE=false npx @modelcontextprotocol/inspector tsx src/index.ts",
     "docs:serve": "mkdocs serve",
     "docs:build": "mkdocs build",
-    "docs:deploy": "mkdocs gh-deploy"
+    "docs:deploy": "mkdocs gh-deploy",
+    "release:patch": "npm version patch -m 'chore(release): %s'",
+    "release:minor": "npm version minor -m 'chore(release): %s'",
+    "release:major": "npm version major -m 'chore(release): %s'"
   },
   "keywords": [
     "mcp",
@@ -58,6 +61,15 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.0.0",
+    "bun": ">=1.3.0"
+  },
+  "packageManager": "bun@1.3.x",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/royisme/mcp-task-relay.git"
+  },
+  "bugs": {
+    "url": "https://github.com/royisme/mcp-task-relay/issues"
   }
 }
