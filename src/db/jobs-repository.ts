@@ -289,7 +289,7 @@ export class JobsRepository {
             heartbeat_at = @now
         WHERE id = @id
           AND lease_owner = @owner
-          AND state = 'RUNNING'
+          AND state IN ('RUNNING', 'WAITING_ON_ANSWER')
       `);
 
       const result = stmt.run({

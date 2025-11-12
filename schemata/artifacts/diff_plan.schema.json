@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-task-relay.dev/schemata/artifacts/diff_plan.schema.json",
+  "title": "DiffPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["steps", "risks", "rollback", "checks"],
+  "properties": {
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "action", "why"],
+        "properties": {
+          "path": { "type": "string" },
+          "action": { "type": "string", "enum": ["create", "modify", "delete", "rename"] },
+          "why": { "type": "string" },
+          "snippet": { "type": "string" },
+          "apply": { "type": "string", "enum": ["patch", "file", "command"], "default": "patch" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "rollback": { "type": "array", "items": { "type": "string" } },
+    "checks": { "type": "array", "items": { "type": "string" } }
+  }
+}

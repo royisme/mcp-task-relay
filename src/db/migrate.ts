@@ -9,7 +9,7 @@ const dbPath = process.env['DB_PATH'] || './jobhub.db';
 
 console.log(`Running migrations on database: ${dbPath}`);
 
-const { db, close } = createConnection(dbPath);
+const { db, close } = createConnection(dbPath, { mode: 'sqlite' });
 
 try {
   runMigrations(db);

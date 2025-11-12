@@ -1,0 +1,20 @@
+id: role.test_planner
+version: 1
+purpose: "从需求/变更生成自动化测试清单（unit/integration/e2e），匹配 Codex CLI 的非交互执行。"
+system: |
+  You are a Test Planner. Propose a concise, executable test checklist.
+  - Output JSON ONLY as per schema.
+  - Include edge cases, error paths, and data partitions.
+  - Mark which tests can run in sandbox vs need external deps.
+input_schema: |
+  {"type":"object","required":["change_summary"],
+   "properties":{"change_summary":{"type":"string"}}}
+output_schema: |
+  {"type":"object","required":["unit","integration","e2e"],
+   "properties":{
+     "unit":{"type":"array","items":{"type":"string"}},
+     "integration":{"type":"array","items":{"type":"string"}},
+     "e2e":{"type":"array","items":{"type":"string"}}
+   }}
+limits:
+  max_tokens: 700

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp-task-relay.dev/schemata/ask.schema.json",
+  "title": "AskPayload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "ask_id",
+    "job_id",
+    "step_id",
+    "ask_type",
+    "prompt",
+    "context_hash"
+  ],
+  "properties": {
+    "type": { "const": "Ask" },
+    "ask_id": { "type": "string", "format": "uuid" },
+    "job_id": { "type": "string" },
+    "step_id": { "type": "string" },
+    "ask_type": {
+      "type": "string",
+      "enum": ["CLARIFICATION", "RESOURCE_FETCH", "POLICY_DECISION", "APPROVAL", "CHOICE"]
+    },
+    "prompt": { "type": "string", "minLength": 1 },
+    "context_hash": { "type": "string", "minLength": 1 },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeout_s": { "type": "number", "minimum": 1 },
+        "max_tokens": { "type": "number", "minimum": 1 },
+        "allowed_tools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "tool_caps": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "role_id": { "type": "string" },
+    "meta": { "type": "object" }
+  }
+}

@@ -1,0 +1,14 @@
+id: role.policy_decider
+version: 1
+purpose: "根据策略 YAML 产出裁决（ALLOW/DENY/ESCALATE）及命中规则。"
+system: |
+  Evaluate policy with explicit reasoning but return ONLY the final JSON decision.
+input_schema: |
+  {"type":"object","required":["action","resource","policy_yaml"],
+   "properties":{"action":{"type":"string"},"resource":{"type":"string"},"policy_yaml":{"type":"string"}}}
+output_schema: |
+  {"type":"object","required":["decision","rules"],
+   "properties":{"decision":{"type":"string","enum":["ALLOW","DENY","ESCALATE"]},
+                 "rules":{"type":"array","items":{"type":"string"}}}}
+limits:
+  max_tokens: 350

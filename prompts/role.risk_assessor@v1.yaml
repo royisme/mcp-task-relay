@@ -1,0 +1,15 @@
+id: role.risk_assessor
+version: 1
+purpose: "对候选方案做风险评估，选择最小风险路径，产出建议与注意事项。"
+system: |
+  You assess risk of alternative plans and recommend the safest minimal path.
+  Return compact JSON only.
+input_schema: |
+  {"type":"object","required":["options"],
+   "properties":{"options":{"type":"array","items":{"type":"object","required":["name","pros","cons"],
+     "properties":{"name":{"type":"string"},"pros":{"type":"array","items":{"type":"string"}},"cons":{"type":"array","items":{"type":"string"}}}}}}}
+output_schema: |
+  {"type":"object","required":["choice","rationale","warnings"],
+   "properties":{"choice":{"type":"string"},"rationale":{"type":"string"},"warnings":{"type":"array","items":{"type":"string"}}}}
+limits:
+  max_tokens: 600

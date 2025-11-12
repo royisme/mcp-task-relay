@@ -6,6 +6,7 @@
 export const JobStates = {
   QUEUED: 'QUEUED',
   RUNNING: 'RUNNING',
+  WAITING_ON_ANSWER: 'WAITING_ON_ANSWER',
   SUCCEEDED: 'SUCCEEDED',
   FAILED: 'FAILED',
   CANCELED: 'CANCELED',
@@ -85,7 +86,15 @@ export function canTransition(from: JobState, to: JobState): boolean {
         to === 'FAILED' ||
         to === 'CANCELED' ||
         to === 'EXPIRED' ||
-        to === 'STALE'
+        to === 'STALE' ||
+        to === 'WAITING_ON_ANSWER'
+      );
+    case 'WAITING_ON_ANSWER':
+      return (
+        to === 'RUNNING' ||
+        to === 'FAILED' ||
+        to === 'CANCELED' ||
+        to === 'EXPIRED'
       );
     case 'STALE':
       return to === 'RUNNING' || to === 'FAILED' || to === 'EXPIRED';
