@@ -41,6 +41,15 @@ export const FailReasons = {
   INTERNAL_ERROR: 'INTERNAL_ERROR', // System error
 } as const;
 
+// Ask/Answer error codes
+export const AskAnswerErrors = {
+  E_CONTEXT_MISMATCH: 'E_CONTEXT_MISMATCH', // Context hash verification failed
+  E_CAPS_VIOLATION: 'E_CAPS_VIOLATION', // Tool capability violation
+  E_NO_CONTEXT_ENVELOPE: 'E_NO_CONTEXT_ENVELOPE', // Missing required context envelope
+} as const;
+
+export type AskAnswerError = (typeof AskAnswerErrors)[keyof typeof AskAnswerErrors];
+
 export type FailReason = (typeof FailReasons)[keyof typeof FailReasons];
 
 // Priority levels

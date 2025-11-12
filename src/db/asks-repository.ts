@@ -8,6 +8,7 @@ import {
   type AskRecord,
   type AskStatus,
   type AskType,
+  type ContextEnvelope,
 } from '../models/index.js';
 import { Result, Ok, Err } from '../models/index.js';
 
@@ -18,6 +19,7 @@ interface AskRow {
   ask_type: string;
   prompt: string;
   context_hash: string;
+  context_envelope_json: string;
   constraints_json: string | null;
   role_id: string | null;
   meta_json: string | null;
@@ -34,6 +36,7 @@ function rowToRecord(row: AskRow): Result<AskRecord, string> {
       askType: row.ask_type as AskType,
       prompt: row.prompt,
       contextHash: row.context_hash,
+      contextEnvelope: JSON.parse(row.context_envelope_json) as ContextEnvelope,
       constraints: row.constraints_json
         ? (JSON.parse(row.constraints_json) as AskRecord['constraints'])
         : undefined,
@@ -61,6 +64,7 @@ export interface CreateAskParams {
   askType: AskType;
   prompt: string;
   contextHash: string;
+  contextEnvelope: ContextEnvelope;
   constraints?: AskRecord['constraints'];
   roleId?: string;
   meta?: AskRecord['meta'];
@@ -81,6 +85,7 @@ export class AsksRepository {
           ask_type,
           prompt,
           context_hash,
+          context_envelope_json,
           constraints_json,
           role_id,
           meta_json,
@@ -93,6 +98,7 @@ export class AsksRepository {
           @askType,
           @prompt,
           @contextHash,
+          @contextEnvelopeJson,
           @constraintsJson,
           @roleId,
           @metaJson,
@@ -108,6 +114,7 @@ export class AsksRepository {
         askType: params.askType,
         prompt: params.prompt,
         contextHash: params.contextHash,
+        contextEnvelopeJson: JSON.stringify(params.contextEnvelope),
         constraintsJson:
           params.constraints !== undefined ? JSON.stringify(params.constraints) : null,
         roleId: params.roleId ?? null,

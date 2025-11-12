@@ -10,6 +10,9 @@ import { createExecutors, selectExecutor } from './executors/index.js';
 import { JobManager } from './core/job-manager.js';
 import { Worker } from './core/worker.js';
 import { AskAnswerServer } from './services/ask-answer.js';
+import { AnswerRunner } from './answer-runner/index.js';
+import type { AskRecord, AnswerPayload } from './models/index.js';
+import type { Logger } from 'pino';
 
 export interface TaskRelayServerOptions {
   /**
@@ -30,6 +33,71 @@ function resolveSqlitePath(mode: StorageMode, provided?: string): string {
     return resolve('./.tmp/dev.sqlite');
   }
   return 'file:mcp-task-relay?mode=memory&cache=shared';
+}
+
+/**
+ * Process an Ask in the background using the Answer Runner
+ */
+async function processAsk(
+  ask: AskRecord,
+  runner: AnswerRunner,
+  jobManager: JobManager,
+  logger: Logger
+): Promise<void> {
+  logger.debug({ askId: ask.askId, jobId: ask.jobId }, 'Processing Ask with Answer Runner');
+
+  try {
+    const result = await runner.run(ask);
+
+    const answerPayload: AnswerPayload = {
+      type: 'Answer',
+      ask_id: ask.askId,
+      job_id: ask.jobId,
+      step_id: ask.stepId,
+      status: result.status,
+      answer_text: result.answerText,
+      answer_json: result.answerJson,
+      attestation: result.attestation,
+      ask_back: result.askBack,
+      error: result.error,
+      policy_trace: result.policyTrace,
+      cacheable: result.cacheable,
+    };
+
+    const recordResult = jobManager.recordAnswer(answerPayload);
+    if (!recordResult.ok) {
+      logger.error(
+        { askId: ask.askId, error: recordResult.error },
+        'Failed to record Answer from runner'
+      );
+    } else {
+      logger.info({ askId: ask.askId, status: result.status }, 'Answer recorded from runner');
+    }
+  } catch (error) {
+    logger.error(
+      { askId: ask.askId, error: error instanceof Error ? error.message : String(error) },
+      'Answer Runner threw exception'
+    );
+
+    // Record an ERROR answer
+    const errorPayload: AnswerPayload = {
+      type: 'Answer',
+      ask_id: ask.askId,
+      job_id: ask.jobId,
+      step_id: ask.stepId,
+      status: 'ERROR',
+      error: error instanceof Error ? error.message : String(error),
+      cacheable: false,
+    };
+
+    const recordResult = jobManager.recordAnswer(errorPayload);
+    if (!recordResult.ok) {
+      logger.error(
+        { askId: ask.askId, error: recordResult.error },
+        'Failed to record ERROR answer'
+      );
+    }
+  }
 }
 
 export async function startTaskRelayServer(options: TaskRelayServerOptions = {}): Promise<void> {
@@ -69,6 +137,8 @@ export async function startTaskRelayServer(options: TaskRelayServerOptions = {})
     const notifier = new Notifier(null, logger);
 
     let askAnswerServer: AskAnswerServer | undefined;
+    let answerRunner: AnswerRunner | undefined;
+
     if (options.askAnswer !== false) {
       askAnswerServer = new AskAnswerServer(jobManager, logger, {
         port: config.askAnswer.port,
@@ -76,6 +146,37 @@ export async function startTaskRelayServer(options: TaskRelayServerOptions = {})
         sseHeartbeatMs: config.askAnswer.sseHeartbeatSec * 1000,
       });
       askAnswerServer.start();
+
+      // Initialize Answer Runner if enabled
+      if (config.askAnswer.runner.enabled) {
+        const promptsDir = config.runtime.promptsDir ?? resolve('./prompts');
+
+        try {
+          answerRunner = new AnswerRunner(
+            {
+              promptsDir,
+              model: config.askAnswer.runner.model,
+              maxRetries: config.askAnswer.runner.maxRetries,
+              defaultTimeout: config.askAnswer.runner.defaultTimeout,
+            },
+            logger
+          );
+
+          // Listen for Ask events and process them in the background
+          jobManager.on('ask.created', ({ ask }) => {
+            void processAsk(ask, answerRunner!, jobManager, logger).catch((error) => {
+              logger.error({ askId: ask.askId, error }, 'Failed to process Ask in background');
+            });
+          });
+
+          logger.info('Answer Runner initialized');
+        } catch (error) {
+          logger.warn(
+            { error: error instanceof Error ? error.message : String(error) },
+            'Answer Runner initialization failed - Ask/Answer will require manual responses'
+          );
+        }
+      }
     }
 
     if (options.webUi) {

@@ -287,6 +287,7 @@ export class JobManager {
       askType: ask.ask_type,
       prompt: ask.prompt,
       contextHash: ask.context_hash,
+      contextEnvelope: ask.context_envelope,
     };
 
     if (ask.constraints !== undefined) {
@@ -364,6 +365,9 @@ export class JobManager {
     }
     if (answerPayload.answer_json !== undefined) {
       answerParams.answerJson = answerPayload.answer_json;
+    }
+    if (answerPayload.attestation !== undefined) {
+      answerParams.attestation = answerPayload.attestation;
     }
     if (answerPayload.artifacts !== undefined) {
       answerParams.artifacts = answerPayload.artifacts;

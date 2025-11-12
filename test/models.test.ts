@@ -93,6 +93,13 @@ describe('Zod Schemas', () => {
       ask_type: 'CLARIFICATION' as const,
       prompt: 'Need more info',
       context_hash: 'ctx-abc',
+      context_envelope: {
+        job_snapshot: {
+          repo: 'github.com/test/repo',
+          env_profile: 'prod',
+        },
+        role: 'default',
+      },
       constraints: { timeout_s: 30, allowed_tools: ['repo.read'] },
     };
 

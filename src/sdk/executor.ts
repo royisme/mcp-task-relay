@@ -1,5 +1,7 @@
-import { createHash, randomUUID } from 'crypto';
-import type { AskType, AnswerStatus } from '../models/schemas.js';
+import { randomUUID } from 'crypto';
+import type { AskType, AnswerStatus, ContextEnvelope, Attestation } from '../models/schemas.js';
+import { AskAnswerErrors } from '../models/states.js';
+import { stableHashContext } from '../utils/hash.js';
 
 type AskOptions = {
   timeout_s?: number;
@@ -28,6 +30,7 @@ type AskPayload = {
   ask_type: AskType;
   prompt: string;
   context_hash: string;
+  context_envelope: ContextEnvelope;
   constraints?: AskConstraints;
   role_id?: string;
   meta?: Record<string, unknown>;
@@ -44,6 +47,7 @@ type AnswerRecord<T> = {
   status: AnswerStatus;
   answerText?: string;
   answerJson?: T;
+  attestation?: Attestation;
   error?: string;
 };
 
@@ -58,13 +62,66 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-function buildContextHash(jobId: string, stepId: string, prompt: string): string {
-  const preset = process.env['TASK_RELAY_CONTEXT_HASH'];
-  if (preset && preset.length > 0) {
-    return preset;
+function buildContextEnvelope(
+  role: string,
+  options?: AskOptions
+): ContextEnvelope {
+  // Extract repo info from environment (only include non-defaults to reduce token usage)
+  const repo = process.env['TASK_RELAY_REPO'];
+  const commitSha = process.env['TASK_RELAY_COMMIT_SHA'];
+  const envProfile = process.env['TASK_RELAY_PROFILE'];
+  const policyVersion = process.env['TASK_RELAY_POLICY_VERSION'];
+
+  // Build job_snapshot with only non-default values
+  const jobSnapshot: {
+    repo?: string;
+    commit_sha?: string;
+    env_profile?: string;
+    policy_version?: string;
+  } = {};
+  if (repo && repo !== 'unknown') jobSnapshot.repo = repo;
+  if (commitSha && commitSha !== 'unknown') jobSnapshot.commit_sha = commitSha;
+  if (envProfile && envProfile !== 'dev') jobSnapshot.env_profile = envProfile;
+  if (policyVersion && policyVersion !== '1.0') jobSnapshot.policy_version = policyVersion;
+
+  // Build facts from environment (skip job_id/step_id as they're already in the payload)
+  const facts: Record<string, unknown> = {};
+
+  // Add custom facts from environment variables prefixed with TASK_RELAY_FACT_
+  for (const key in process.env) {
+    if (key.startsWith('TASK_RELAY_FACT_')) {
+      const factKey = key.replace('TASK_RELAY_FACT_', '').toLowerCase();
+      facts[factKey] = process.env[key];
+    }
   }
 
-  return createHash('sha256').update(`${jobId}:${stepId}:${prompt}`).digest('hex');
+  // Build tool capabilities from options (only if tools are specified)
+  let toolCaps: Record<string, { timeout_ms?: number; read_only?: boolean }> | undefined;
+  if (options?.allowed_tools && options.allowed_tools.length > 0) {
+    toolCaps = {};
+    for (const tool of options.allowed_tools) {
+      const caps: { timeout_ms?: number; read_only?: boolean } = {};
+      // Only include timeout if specified (skip default read_only=true to save tokens)
+      if (options.timeout_s) {
+        caps.timeout_ms = options.timeout_s * 1000;
+      }
+      // Only add caps if non-empty
+      if (Object.keys(caps).length > 0) {
+        toolCaps[tool] = caps;
+      }
+    }
+    // If all caps are empty, don't include tool_caps at all
+    if (Object.keys(toolCaps).length === 0) {
+      toolCaps = undefined;
+    }
+  }
+
+  return {
+    job_snapshot: jobSnapshot,
+    facts: Object.keys(facts).length > 0 ? facts : undefined,
+    tool_caps: toolCaps,
+    role,
+  };
 }
 
 function buildConstraints(options?: AskOptions): AskConstraints | undefined {
@@ -121,6 +178,13 @@ export async function ask<T = unknown>(
   const constraints = buildConstraints(options);
   const meta = buildMeta(options);
 
+  // Build context envelope with role
+  const role = options?.role_id ?? 'default';
+  const contextEnvelope = buildContextEnvelope(role, options);
+
+  // Compute context hash from envelope
+  const contextHash = stableHashContext(contextEnvelope);
+
   const payload = {
     type: 'Ask' as const,
     ask_id: randomUUID(),
@@ -128,7 +192,8 @@ export async function ask<T = unknown>(
     step_id: stepId,
     ask_type: type,
     prompt,
-    context_hash: buildContextHash(jobId, stepId, prompt),
+    context_hash: contextHash,
+    context_envelope: contextEnvelope,
     ...(constraints ? { constraints } : {}),
     ...(options?.role_id ? { role_id: options.role_id } : {}),
     ...(meta ? { meta } : {}),
@@ -167,6 +232,16 @@ export async function ask<T = unknown>(
     }
 
     const answer = (await answerResponse.json()) as AnswerRecord<T>;
+
+    // Verify attestation if present
+    if (answer.attestation) {
+      if (answer.attestation.context_hash !== contextHash) {
+        throw new Error(
+          `${AskAnswerErrors.E_CONTEXT_MISMATCH}: Answer attestation context hash mismatch. ` +
+          `Expected ${contextHash}, got ${answer.attestation.context_hash}`
+        );
+      }
+    }
 
     switch (answer.status) {
       case 'ANSWERED':

@@ -220,6 +220,23 @@ export const AskConstraintsSchema = z
   })
   .optional();
 
+export const ContextEnvelopeSchema = z.object({
+  job_snapshot: z.object({
+    repo: z.string().optional(), // Optional: default 'unknown'
+    commit_sha: z.string().optional(), // Optional: default 'unknown'
+    env_profile: z.string().optional(), // Optional: default 'dev'
+    policy_version: z.string().optional(), // Optional: default '1.0'
+  }),
+  facts: z.record(z.unknown()).optional(), // Optional: skip if empty
+  tool_caps: z.record(z.object({
+    database: z.string().optional(),
+    tables: z.array(z.string()).optional(),
+    read_only: z.boolean().optional(),
+    timeout_ms: z.number().optional(),
+  })).optional(),
+  role: z.string(),
+});
+
 export const AskPayloadSchema = z.object({
   type: z.literal('Ask'),
   ask_id: z.string().uuid(),
@@ -228,6 +245,7 @@ export const AskPayloadSchema = z.object({
   ask_type: AskTypeSchema,
   prompt: z.string().min(1),
   context_hash: z.string().min(1),
+  context_envelope: ContextEnvelopeSchema,
   constraints: AskConstraintsSchema,
   role_id: z.string().optional(),
   meta: z.record(z.unknown()).optional(),
@@ -248,6 +266,7 @@ export const AskRecordSchema = z.object({
   askType: AskTypeSchema,
   prompt: z.string(),
   contextHash: z.string(),
+  contextEnvelope: ContextEnvelopeSchema,
   constraints: AskConstraintsSchema,
   roleId: z.string().optional(),
   meta: z.record(z.unknown()).optional(),
@@ -262,6 +281,16 @@ export const AnswerStatusSchema = z.enum([
   'ERROR',
 ]);
 
+export const AttestationSchema = z.object({
+  context_hash: z.string(),
+  role_id: z.string(),
+  role_version: z.string(),
+  model: z.string(),
+  prompt_fingerprint: z.string(),
+  tools_used: z.array(z.string()),
+  policy_version: z.string(),
+});
+
 export const AnswerPayloadSchema = z.object({
   type: z.literal('Answer'),
   ask_id: z.string().uuid(),
@@ -270,6 +299,7 @@ export const AnswerPayloadSchema = z.object({
   status: AnswerStatusSchema,
   answer_text: z.string().optional(),
   answer_json: z.unknown().optional(),
+  attestation: AttestationSchema.optional(),
   artifacts: z.array(z.string()).optional(),
   policy_trace: z.unknown().optional(),
   cacheable: z.boolean().optional(),
@@ -284,6 +314,7 @@ export const AnswerRecordSchema = z.object({
   status: AnswerStatusSchema,
   answerText: z.string().optional(),
   answerJson: z.unknown().optional(),
+  attestation: AttestationSchema.optional(),
   artifacts: z.array(z.string()).optional(),
   policyTrace: z.unknown().optional(),
   cacheable: z.boolean().default(true),
@@ -302,10 +333,12 @@ export const DecisionCacheRecordSchema = z.object({
 });
 
 export type AskType = z.infer<typeof AskTypeSchema>;
+export type ContextEnvelope = z.infer<typeof ContextEnvelopeSchema>;
 export type AskPayload = z.infer<typeof AskPayloadSchema>;
 export type AskRecord = z.infer<typeof AskRecordSchema>;
 export type AskStatus = z.infer<typeof AskStatusSchema>;
 export type AnswerStatus = z.infer<typeof AnswerStatusSchema>;
+export type Attestation = z.infer<typeof AttestationSchema>;
 export type AnswerPayload = z.infer<typeof AnswerPayloadSchema>;
 export type AnswerRecord = z.infer<typeof AnswerRecordSchema>;
 export type DecisionCacheRecord = z.infer<typeof DecisionCacheRecordSchema>;

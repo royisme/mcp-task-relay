@@ -26,6 +26,12 @@ export const ConfigSchema = z.object({
     port: z.number().int().positive().default(3415),
     longPollTimeoutSec: z.number().int().positive().max(60).default(25),
     sseHeartbeatSec: z.number().int().positive().max(60).default(10),
+    runner: z.object({
+      enabled: z.boolean().default(true),
+      model: z.string().default('claude-3-5-sonnet-20241022'),
+      maxRetries: z.number().int().min(0).max(3).default(1),
+      defaultTimeout: z.number().int().positive().default(60),
+    }),
   }),
 
   storage: z.object({
