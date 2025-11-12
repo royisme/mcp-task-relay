@@ -33,7 +33,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-          cache-install: true
 
       - name: Install deps (Bun)
         run: bun install --frozen-lockfile
@@ -61,15 +60,14 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-          cache-install: true
       - name: Install deps (Bun)
         run: bun install --frozen-lockfile
 
       - name: Build (Bun)
-        run: bun run build --if-present
+        run: bun run build
 
       - name: Test (Bun)
-        run: bun run test --if-present
+        run: bun run test
 
       # 发布阶段用 npm（OIDC）
       - uses: actions/setup-node@v4
