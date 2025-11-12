@@ -110,6 +110,8 @@ Executors can request information, approval, or policy decisions from the schedu
 - **LLM Integration**: Uses Anthropic Claude for intelligent, context-aware responses
 - **JSON Schema Validation**: Ensures responses match expected output formats
 - **Decision Caching**: Reuses answers for repetitive queries
+- **Context Envelope Protocol**: Explicit context snapshots with SHA-256 hash verification to prevent context drift between Executor and Answer Runner
+- **Answer Attestation**: Cryptographic proof of which context/role/model/tools were used to generate each Answer
 
 ### Database & Persistence
 - SQLite with WAL mode for high-performance concurrent access

@@ -205,6 +205,59 @@ askAnswer:
     enabled: false
 ```
 
+### Context Envelope Protocol
+
+To prevent context drift between Executor and Answer Runner, every Ask includes an explicit **context envelope** with cryptographic verification:
+
+**Context Envelope Structure:**
+```json
+{
+  "job_snapshot": {
+    "repo": "github.com/user/repo",
+    "commit_sha": "abc123...",
+    "env_profile": "dev",
+    "policy_version": "1.0"
+  },
+  "facts": {
+    "job_id": "job_123",
+    "step_id": "step_456",
+    "custom_fact": "value"
+  },
+  "tool_caps": {
+    "database": {
+      "timeout_ms": 5000,
+      "read_only": true
+    }
+  },
+  "role": "diff_planner"
+}
+```
+
+**Verification Flow:**
+1. Executor builds context_envelope and computes SHA-256 hash (context_hash)
+2. Ask sent to Scheduler with both context_envelope and context_hash
+3. Answer Runner verifies hash matches envelope before processing (fail-fast on mismatch)
+4. Answer Runner generates attestation proving which context/role/model/tools were used
+5. Executor verifies answer attestation matches original context_hash
+
+**Error Codes:**
+- `E_CONTEXT_MISMATCH` — Context hash verification failed
+- `E_CAPS_VIOLATION` — Tool capability violation
+- `E_NO_CONTEXT_ENVELOPE` — Missing required context envelope
+
+**Environment Variables for Executors:**
+```bash
+export TASK_RELAY_JOB_ID="job_123"
+export TASK_RELAY_STEP_ID="step_456"
+export TASK_RELAY_REPO="github.com/user/repo"
+export TASK_RELAY_COMMIT_SHA="abc123..."
+export TASK_RELAY_PROFILE="dev"
+export TASK_RELAY_POLICY_VERSION="1.0"
+export TASK_RELAY_FACT_custom_key="value"  # Custom facts with TASK_RELAY_FACT_ prefix
+```
+
+The Executor SDK automatically builds and verifies context envelopes — no manual intervention required.
+
 ---
 
 ## Smoke Test
@@ -258,3 +311,15 @@ A: Set `TASK_RELAY_PROFILE=dev` for debug-level logs. Check logs for "Answer Run
 
 **Q: What if I don't have an Anthropic API key?**
 A: Disable the Answer Runner (`TASK_RELAY_ANSWER_RUNNER_ENABLED=false`). Asks will remain in `PENDING` state until manually answered via the HTTP API.
+
+**Q: What is the context envelope protocol?**
+A: An explicit, structured context snapshot that prevents context drift between Executor and Answer Runner. Each Ask includes a context envelope with cryptographic hash verification (SHA-256). The Answer Runner verifies the hash before processing and generates an attestation proving which context/role/model was used.
+
+**Q: Do I need to manually build context envelopes?**
+A: No. The Executor SDK (`src/sdk/executor.ts`) automatically builds context envelopes from environment variables and computes the hash. Verification happens automatically on both sides (Runner and Executor).
+
+**Q: What happens if context verification fails?**
+A: The Answer Runner returns an `E_CONTEXT_MISMATCH` error immediately (fail-fast). The Executor SDK also verifies the answer attestation and throws the same error if the context hash doesn't match.
+
+**Q: How do I pass custom facts to the context envelope?**
+A: Use environment variables with the `TASK_RELAY_FACT_` prefix. For example, `TASK_RELAY_FACT_branch=main` adds `"branch": "main"` to the facts object.

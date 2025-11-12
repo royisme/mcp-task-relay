@@ -7,6 +7,7 @@ import {
   AnswerRecordSchema,
   type AnswerRecord,
   type AnswerStatus,
+  type Attestation,
 } from '../models/index.js';
 import { Result, Ok, Err } from '../models/index.js';
 
@@ -17,6 +18,7 @@ interface AnswerRow {
   status: string;
   answer_text: string | null;
   answer_json: string | null;
+  attestation_json: string | null;
   artifacts_json: string | null;
   policy_trace_json: string | null;
   cacheable: number | null;
@@ -34,6 +36,9 @@ function rowToRecord(row: AnswerRow): Result<AnswerRecord, string> {
       status: row.status as AnswerStatus,
       answerText: row.answer_text ?? undefined,
       answerJson: row.answer_json ? (JSON.parse(row.answer_json) as unknown) : undefined,
+      attestation: row.attestation_json
+        ? (JSON.parse(row.attestation_json) as Attestation)
+        : undefined,
       artifacts: row.artifacts_json
         ? (JSON.parse(row.artifacts_json) as string[])
         : undefined,
@@ -64,6 +69,7 @@ export interface CreateAnswerParams {
   status: AnswerStatus;
   answerText?: string;
   answerJson?: unknown;
+  attestation?: Attestation;
   artifacts?: string[];
   policyTrace?: unknown;
   cacheable?: boolean;
@@ -86,6 +92,7 @@ export class AnswersRepository {
           status,
           answer_text,
           answer_json,
+          attestation_json,
           artifacts_json,
           policy_trace_json,
           cacheable,
@@ -99,6 +106,7 @@ export class AnswersRepository {
           @status,
           @answerText,
           @answerJson,
+          @attestationJson,
           @artifactsJson,
           @policyTraceJson,
           @cacheable,
@@ -110,6 +118,7 @@ export class AnswersRepository {
           status = excluded.status,
           answer_text = excluded.answer_text,
           answer_json = excluded.answer_json,
+          attestation_json = excluded.attestation_json,
           artifacts_json = excluded.artifacts_json,
           policy_trace_json = excluded.policy_trace_json,
           cacheable = excluded.cacheable,
@@ -125,6 +134,7 @@ export class AnswersRepository {
         status: params.status,
         answerText: params.answerText ?? null,
         answerJson: params.answerJson !== undefined ? JSON.stringify(params.answerJson) : null,
+        attestationJson: params.attestation ? JSON.stringify(params.attestation) : null,
         artifactsJson: params.artifacts ? JSON.stringify(params.artifacts) : null,
         policyTraceJson: params.policyTrace ? JSON.stringify(params.policyTrace) : null,
         cacheable: params.cacheable === undefined ? 1 : params.cacheable ? 1 : 0,

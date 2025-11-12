@@ -57,6 +57,7 @@ async function processAsk(
       status: result.status,
       answer_text: result.answerText,
       answer_json: result.answerJson,
+      attestation: result.attestation,
       ask_back: result.askBack,
       error: result.error,
       policy_trace: result.policyTrace,

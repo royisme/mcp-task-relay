@@ -4,8 +4,11 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
+import { createHash } from 'crypto';
 import type { Logger } from 'pino';
-import type { AskRecord, AnswerStatus } from '../models/index.js';
+import type { AskRecord, AnswerStatus, Attestation } from '../models/index.js';
+import { AskAnswerErrors } from '../models/index.js';
+import { stableHashContext } from '../utils/index.js';
 import { RoleCatalog } from './role-catalog.js';
 import { PromptBuilder } from './prompt-builder.js';
 
@@ -13,6 +16,7 @@ export interface AnswerResult {
   status: AnswerStatus;
   answerText?: string;
   answerJson?: unknown;
+  attestation?: Attestation;
   askBack?: string;
   error?: string;
   policyTrace?: unknown;
@@ -56,6 +60,24 @@ export class AnswerRunner {
    */
   async run(ask: AskRecord): Promise<AnswerResult> {
     this.logger.info({ askId: ask.askId, askType: ask.askType }, 'Processing Ask');
+
+    // Verify context hash (fail-fast on mismatch)
+    const computedHash = stableHashContext(ask.contextEnvelope);
+    if (computedHash !== ask.contextHash) {
+      this.logger.error(
+        {
+          askId: ask.askId,
+          expectedHash: ask.contextHash,
+          computedHash,
+        },
+        `Context hash mismatch - ${AskAnswerErrors.E_CONTEXT_MISMATCH}`
+      );
+      return {
+        status: 'ERROR',
+        error: `${AskAnswerErrors.E_CONTEXT_MISMATCH}: Context hash verification failed. Expected ${ask.contextHash}, computed ${computedHash}`,
+        cacheable: false,
+      };
+    }
 
     // Load role definition
     const roleId = ask.roleId ?? this.catalog.getDefaultRoleForType(ask.askType);
@@ -119,9 +141,19 @@ export class AnswerRunner {
           }
         }
 
+        // Generate attestation for the answer
+        const attestation = this.generateAttestation(
+          ask,
+          roleId ?? 'default',
+          String(role?.version ?? '1.0'),
+          prompt,
+          ask.constraints?.allowed_tools ?? []
+        );
+
         return {
           status: 'ANSWERED',
           ...parsed,
+          attestation,
           cacheable: true,
         };
       } catch (error) {
@@ -258,5 +290,29 @@ export class AnswerRunner {
    */
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Generate attestation for an answer
+   */
+  private generateAttestation(
+    ask: AskRecord,
+    roleId: string,
+    roleVersion: string,
+    prompt: string,
+    toolsUsed: string[]
+  ): Attestation {
+    // Generate prompt fingerprint (SHA-256 hash of the prompt)
+    const promptFingerprint = createHash('sha256').update(prompt, 'utf8').digest('hex');
+
+    return {
+      context_hash: ask.contextHash,
+      role_id: roleId,
+      role_version: roleVersion,
+      model: this.config.model,
+      prompt_fingerprint: promptFingerprint,
+      tools_used: toolsUsed,
+      policy_version: ask.contextEnvelope.job_snapshot.policy_version,
+    };
   }
 }
