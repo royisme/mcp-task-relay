@@ -27,9 +27,10 @@
     "test:watch": "bun test --watch",
     "inspector": "npx @modelcontextprotocol/inspector tsx src/index.ts",
     "inspector:standalone": "MCP_MODE=false npx @modelcontextprotocol/inspector tsx src/index.ts",
-    "docs:serve": "mkdocs serve",
-    "docs:build": "mkdocs build",
-    "docs:deploy": "mkdocs gh-deploy",
+    "docs:api": "typedoc",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "npm run docs:api && vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "release:patch": "npm version patch -m 'chore(release): %s'",
     "release:minor": "npm version minor -m 'chore(release): %s'",
     "release:major": "npm version major -m 'chore(release): %s'"
@@ -45,9 +46,9 @@
     "@anthropic-ai/sdk": "^0.32.1",
     "@modelcontextprotocol/sdk": "^1.21.1",
     "better-sqlite3": "^11.10.0",
+    "commander": "^13.1.0",
     "dotenv": "^16.6.1",
     "execa": "^9.6.0",
-    "commander": "^13.1.0",
     "pino": "^9.14.0",
     "pino-pretty": "^13.1.2",
     "yaml": "^2.7.0",
@@ -60,7 +61,10 @@
     "oxlint": "latest",
     "oxlint-tsgolint": "^0.5.1",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typedoc": "^0.28.14",
+    "typedoc-plugin-markdown": "^4.9.0",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4"
   },
   "engines": {
     "node": ">=20.0.0",
