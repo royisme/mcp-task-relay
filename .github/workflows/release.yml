@@ -45,7 +45,8 @@ jobs:
 
       - name: Bump version & create tag
         run: |
-          npm version ${{ inputs.release_type }} -m "chore(release): %s"
+          bun pm version ${{ inputs.release_type }} \
+            --message "chore(release): %s"
           git push --follow-tags
 
   publish:
